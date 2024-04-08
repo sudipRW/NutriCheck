@@ -123,8 +123,6 @@ export default function App() {
                   </View>
                 </TouchableOpacity>
   
-                <Text style={{position: 'absolute',bottom: -195,color: '#459D00',fontSize: 30,fontWeight: '500'}}>Click</Text>
-  
               <TouchableOpacity onPress={() => setIsCameraOpened(false)} style={styles.closeCamera}>
                 <Text style={{ fontSize: 30, fontWeight: '600',color: 'white' }}>X</Text>
               </TouchableOpacity>
@@ -136,7 +134,7 @@ export default function App() {
       <View style={styles.opencamera}>
                 {
                 !isCameraOpened && !isProcessing && output == '' &&(
-                  <CustomButton title={"Open Camera"} onPress={() =>{
+                  <CustomButton title={"Take a Shot"} onPress={() =>{
                     setIsCameraOpened(true)
                     }} src={cameraIcon}/>
                 )
