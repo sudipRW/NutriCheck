@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, Image, Button, TouchableOpacity } from 'react-native';
 import { Camera } from 'expo-camera'
 import * as MediaLibrary from 'expo-media-library'
-import bgImg from './assets/nutrition.jpg'
-import cameraIcon from './assets/camera.png'
+import bgImg from './assets/bg.png'
+import cameraIcon from './assets/camera-icon.png'
 import axios from 'axios';
 import CustomButton from './components/CustomButton.js'
 import Loader from './components/Loader.js'
@@ -82,56 +82,69 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Image source={bgImg} style={styles.bgImg} />
-      <Text style={styles.title}>NutriCheck</Text>
-      <TouchableOpacity onPress={() => {
-        setIsCameraOpened(true)
-        setOutput('')
-      }}>
-        <View style={styles.iconContainer}>
-          <Image source={cameraIcon} style={styles.icon} />
-          <Text style={styles.iconTitle}>Open Camera</Text>
-        </View>
-      </TouchableOpacity>
+      {!isCameraOpened && output == '' && (
+        <Image source={bgImg} style={styles.bgImg} />
+      )} 
+      <Text style={styles.title}>NUTRICHECK</Text>
 
       {
          capturedImage && !isProcessing && (
           <View style={{ flexDirection: 'col', gap: 20, alignItems: 'center'}}>
             <Image source={{ uri: capturedImage }} style={styles.image} />
-            <CustomButton title={"Retake"} onPress={reset} style={{width: 100}}/>
-            <CustomButton title={"Process"} onPress={proceedOCR} style={{width: 100}} />
+            <CustomButton title={"Check"} onPress={proceedOCR} style={{width: 120}} />
+            <CustomButton title={"Retake"} onPress={reset} style={{width: 120,backgroundColor: '#ACF970'}}/>
           </View>
         )
       }
       
       {
-        output != '' && (
+        output != '' ?(
+        <View>
           <Output result={output}/>
+          <CustomButton title={"Home"} onPress={()=>  setOutput('')} style={{width: 120, left: '0%', top: '165%'}}/>
+        </View>
+        ) : (
+          <View style={styles.cameraContainer}>
+          {!capturedImage && isCameraOpened && (
+            <View style={{ width: '100%', height: '100%', alignItems: 'center' }}>
+              <Camera
+                style={styles.camera}
+                type={type}
+                flashMode={flash}
+                ref={cameraRef}
+                autoFocus={Camera.Constants.AutoFocus.on}
+              >  
+                
+              </Camera>
+             
+  
+                <TouchableOpacity onPress={takePicture} style={styles.takePictureBtn}>
+                  <View style={styles.captureBtn}>
+                  </View>
+                </TouchableOpacity>
+  
+                <Text style={{position: 'absolute',bottom: -195,color: '#459D00',fontSize: 30,fontWeight: '500'}}>Click</Text>
+  
+              <TouchableOpacity onPress={() => setIsCameraOpened(false)} style={styles.closeCamera}>
+                <Text style={{ fontSize: 30, fontWeight: '600',color: 'white' }}>X</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          </View>
         )
       }
-      <View style={styles.cameraContainer}>
-        {!capturedImage && isCameraOpened && (
-          <View style={{ width: '100%', height: '100%', alignItems: 'center' }}>
-            <Camera
-              style={styles.camera}
-              type={type}
-              flashMode={flash}
-              ref={cameraRef}
-              autoFocus={Camera.Constants.AutoFocus.on}
-            >  
-              <View style={styles.buttonContainer}>
-                <CustomButton title={"Take Picture"} onPress={takePicture}/>
+      <View style={styles.opencamera}>
+                {
+                !isCameraOpened && !isProcessing && output == '' &&(
+                  <CustomButton title={"Open Camera"} onPress={() =>{
+                    setIsCameraOpened(true)
+                    }} src={cameraIcon}/>
+                )
+              }
               </View>
-            </Camera>
-            <TouchableOpacity onPress={() => setIsCameraOpened(false)} style={styles.closeCamera}>
-              <Text style={{ fontSize: 30, fontWeight: '600',color: 'white' }}>X</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
 
       {isProcessing && (
-        <Loader message={"Procesing..."} loading={isProcessing}/>
+        <Loader message={"Tracking"} loading={isProcessing}/>
       )}
 
     </View>
@@ -143,61 +156,71 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     height: '100%',
+    backgroundColor: '#F4F8E7'
   },
   title: {
     fontSize: 40,
     fontWeight: '700',
     letterSpacing: 5,
-    color: 'green',
-    marginTop: 40
+    color: '#459D00',
+    marginTop: 60
+    
   },
   bgImg: {
     position: 'absolute',
     zIndex: -1,
     width: '100%',
-    height: '100%',
-    objectFit: 'cover'
+    height: '50%',
+    objectFit: 'fill',
+    top: 150
   },
   camera: {
-    width: '80%',
-    flex: 1
+    width: 400,
+    height: 500,
   },
   cameraContainer: {
     marginTop: 40,
     width: '100%',
     height: '60%',
     alignItems: 'center',
+
   },
   image: {
     width: 400,
-    height: 400,
+    height: 500,
+    marginTop: 60
   },
-  icon: {
-    width: 60,
-    height: 60,
-  },
-  iconContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  iconTitle: {
-    fontSize: 20,
-    fontWeight: '600'
-  },
+
   closeCamera: {
     width: 50,
     height: 50,
-    backgroundColor: 'green',
+    backgroundColor: '#ACF970',
     marginTop: 20,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 100,
   },
-  buttonContainer:{
+  takePictureBtn:{
     position: 'absolute',
-    bottom: 10,
-    left: 0,
-    right: 0,
+    bottom: -150, // Adjust this value to control the distance from the bottom
+    left: '50%', // Move the button to the horizontal center
+    marginLeft: -40, // Adjust this value to center the button properly
     alignItems: 'center',
+    justifyContent: 'center', // Center the content horizontally and vertically
+    width: 80,
+    height: 80,
+    borderRadius: 100,
+    backgroundColor: 'white',
+    borderWidth: 2, 
+    borderColor: '#459D00',
+  },
+  opencamera:{
+    marginTop: 100,
+  },
+  captureBtn:{
+    backgroundColor: '#459D00',
+    width: 72,
+    height: 72,
+    borderRadius: 100,
   }
 });

@@ -9,8 +9,9 @@ const Loader = ({ loading, message }) => {
   return (
     <View style={styles.overlay}>
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#f4acb7" />
-        <Text style={styles.message}>{message}</Text>
+        <ActivityIndicator size="large" color="#459D00" />
+        <Text style={[styles.message,{fontSize: 30}]}>{message}</Text>
+        <Text style={styles.message}>"Reach your goals through mindful eating."</Text>
       </View>
     </View>
   );
@@ -24,7 +25,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loaderContainer: {
-    backgroundColor: 'white',
+    backgroundColor: '#F4F8E7',
     padding: 20,
     borderRadius: 10,
     justifyContent: 'center',
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
   message: {
     marginTop: 10,
     fontSize: 16,
-    color: '#333',
+    color: '#459D00',
   },
 });
 
