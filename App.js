@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, Image, Button, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Image, Button, TouchableOpacity, Animated, Easing } from 'react-native';
 import { Camera } from 'expo-camera'
 import * as MediaLibrary from 'expo-media-library'
 import bgImg from './assets/bg.png'
 import cameraIcon from './assets/camera-icon.png'
+import error from './assets/errorPopup.png'
 import axios from 'axios';
 import CustomButton from './components/CustomButton.js'
 import Loader from './components/Loader.js'
@@ -19,6 +20,25 @@ export default function App() {
   const [type, setType] = useState(Camera.Constants.Type.back)
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off)
   const cameraRef = useRef(null)
+  const animatedValue = useRef(new Animated.Value(-50)).current
+
+
+  useEffect(() => {
+    const animateErrorMessage = () => {
+      animatedValue.setValue(-50)
+      Animated.timing(animatedValue, {
+        toValue: 200,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: false
+      }).start();
+    };
+
+    if (output === 'unidentified') {
+      animateErrorMessage();
+    }
+  }, [output]);
+  
 
   useEffect(() => {
     (async () => {
@@ -48,7 +68,6 @@ export default function App() {
 
   const proceedOCR = async () => {
     setIsProcessing(true)
-    setCapturedImage(null)
     setIsCameraOpened(false)
 
     const formData = new FormData();
@@ -80,28 +99,38 @@ export default function App() {
 
   }
 
+
   return (
     <View style={styles.container}>
-      {!isCameraOpened && output == '' && (
+      {!isCameraOpened && (output === '' || output === 'unidentified') && (
         <Image source={bgImg} style={styles.bgImg} />
       )} 
       <Text style={styles.title}>NUTRICHECK</Text>
 
+      {output === 'unidentified' &&(
+        <Animated.View style={{position: 'absolute',bottom: animatedValue}}>
+          <Image source={error}/>
+        </Animated.View>
+      )}
+
       {
-         capturedImage && !isProcessing && (
+         capturedImage && !isProcessing && output == '' &&(
           <View style={{ flexDirection: 'col', gap: 20, alignItems: 'center'}}>
             <Image source={{ uri: capturedImage }} style={styles.image} />
-            <CustomButton title={"Check"} onPress={proceedOCR} style={{width: 120}} />
+            <CustomButton title={"Check"} onPress={proceedOCR} style={{width: 140}} />
             <CustomButton title={"Retake"} onPress={reset} style={{width: 120,backgroundColor: '#ACF970'}}/>
           </View>
         )
       }
       
       {
-        output != '' ?(
+        (output === 'healthy' || output === 'unhealthy' || output == 'moderate') ?(
         <View>
-          <Output result={output}/>
-          <CustomButton title={"Home"} onPress={()=>  setOutput('')} style={{width: 120, left: '0%', top: '165%'}}/>
+          <Output result={output} capturedImage={capturedImage}/>
+          <CustomButton title={"Home"} onPress={()=>  {
+            setOutput('')
+            setCapturedImage(null)
+          }} style={{width: 120, left: '17%',top: 80}}/>
         </View>
         ) : (
           <View style={styles.cameraContainer}>
@@ -133,9 +162,11 @@ export default function App() {
       }
       <View style={styles.opencamera}>
                 {
-                !isCameraOpened && !isProcessing && output == '' &&(
+                !isCameraOpened && !isProcessing && (output === '' || output === 'unidentified') &&(
                   <CustomButton title={"Take a Shot"} onPress={() =>{
                     setIsCameraOpened(true)
+                    setCapturedImage(null)
+                    setOutput('')
                     }} src={cameraIcon}/>
                 )
               }
@@ -200,11 +231,11 @@ const styles = StyleSheet.create({
   },
   takePictureBtn:{
     position: 'absolute',
-    bottom: -150, // Adjust this value to control the distance from the bottom
-    left: '50%', // Move the button to the horizontal center
-    marginLeft: -40, // Adjust this value to center the button properly
+    bottom: -150, 
+    left: '50%', 
+    marginLeft: -40, 
     alignItems: 'center',
-    justifyContent: 'center', // Center the content horizontally and vertically
+    justifyContent: 'center', 
     width: 80,
     height: 80,
     borderRadius: 100,
@@ -220,5 +251,8 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 100,
+  },
+  errorMessage:{
+    position: 'absolute'
   }
 });
